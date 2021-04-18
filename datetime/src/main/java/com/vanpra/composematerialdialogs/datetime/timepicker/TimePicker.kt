@@ -57,7 +57,7 @@ import androidx.compose.ui.unit.sp
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.util.getOffset
 import com.vanpra.composematerialdialogs.datetime.util.isAM
-import com.vanpra.composematerialdialogs.datetime.util.noSeconds
+import com.vanpra.composematerialdialogs.datetime.util.removeSeconds
 import com.vanpra.composematerialdialogs.datetime.util.simpleHour
 import com.vanpra.composematerialdialogs.datetime.util.toAM
 import com.vanpra.composematerialdialogs.datetime.util.toPM
@@ -91,7 +91,7 @@ private data class SelectedOffset(
  */
 @Composable
 fun MaterialDialog.timepicker(
-    initialTime: LocalTime = LocalTime.now().noSeconds(),
+    initialTime: LocalTime = LocalTime.now().removeSeconds(),
     colors: TimePickerColors = TimePickerDefaults.colors(),
     waitForPositiveButton: Boolean = true,
     minimumTime: LocalTime = LocalTime.MIN,

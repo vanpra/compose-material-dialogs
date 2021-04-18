@@ -6,6 +6,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.Month
 import java.time.YearMonth
+import java.time.temporal.TemporalAdjusters
 import java.util.Locale
 import kotlin.math.cos
 import kotlin.math.sin
@@ -37,4 +38,19 @@ internal val LocalTime.simpleHour: Int
 internal fun LocalTime.toAM(): LocalTime = if (this.isAM) this else this.minusHours(12)
 internal fun LocalTime.toPM(): LocalTime = if (!this.isAM) this else this.plusHours(12)
 
-internal fun LocalTime.noSeconds(): LocalTime = LocalTime.of(this.hour, this.second)
+internal fun LocalTime.removeSeconds(): LocalTime = LocalTime.of(this.hour, this.second)
+
+internal fun LocalDate.plusYearsStartDate(years: Long) =
+    this.plusYears(years).with(TemporalAdjusters.firstDayOfYear())
+
+internal fun LocalDate.plusYearsEndDate(years: Long) =
+    this.plusYears(years).with(TemporalAdjusters.lastDayOfYear())
+
+internal fun LocalDate.yearsDateRange(years: Long) =
+    this.plusYearsStartDate(-years)..this.plusYearsEndDate(years)
+
+internal fun LocalDate.plusMonthsStartDate(months: Long) =
+    this.plusMonths(months).with(TemporalAdjusters.firstDayOfMonth())
+
+internal fun LocalDate.plusMonthsEndDate(months: Long) =
+    this.plusMonths(months).with(TemporalAdjusters.lastDayOfMonth())

@@ -1,4 +1,4 @@
-package com.vanpra.composematerialdialogs.datetime
+package com.vanpra.composematerialdialogs.datetime.util
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationEndReason
@@ -95,7 +95,9 @@ fun ViewPager(
         val index = remember { mutableStateOf(0) }
 
         when {
-            index.value == indexRange.first && index.value == indexRange.last -> offset.updateBounds(0f, 0f)
+            index.value == indexRange.first && index.value == indexRange.last -> {
+                offset.updateBounds(0f, 0f)
+            }
             index.value == indexRange.first -> offset.updateBounds(-width, 0f)
             index.value == indexRange.last -> offset.updateBounds(0f, width)
             else -> offset.updateBounds(-width, width)

@@ -14,11 +14,12 @@ import com.vanpra.composematerialdialogs.datetime.timepicker.TimePickerColors
 import com.vanpra.composematerialdialogs.datetime.timepicker.TimePickerDefaults
 import com.vanpra.composematerialdialogs.datetime.timepicker.TimePickerImpl
 import com.vanpra.composematerialdialogs.datetime.timepicker.TimePickerState
-import com.vanpra.composematerialdialogs.datetime.util.noSeconds
+import com.vanpra.composematerialdialogs.datetime.util.yearsDateRange
+import com.vanpra.composematerialdialogs.datetime.util.removeSeconds
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.time.temporal.TemporalAdjusters
 
 /**
  * @brief A combined date and time picker dialog
@@ -36,7 +37,7 @@ import java.time.temporal.TemporalAdjusters
 fun MaterialDialog.datetimepicker(
     initialDateTime: LocalDateTime = LocalDateTime.now(),
     timePickerColors: TimePickerColors = TimePickerDefaults.colors(),
-    closedDateRange: ClosedRange<LocalDateTime>? = null,
+    dateRange: ClosedRange<LocalDate> = initialDateTime.toLocalDate().yearsDateRange(75),
     minimumTime: LocalTime = LocalTime.MIN,
     maximumTime: LocalTime = LocalTime.MAX,
     is24HourClock: Boolean = false,
@@ -45,18 +46,21 @@ fun MaterialDialog.datetimepicker(
     onCancel: () -> Unit = {},
     onComplete: (LocalDateTime) -> Unit = {}
 ) {
-    val dateRange = closedDateRange ?: initialDateTime.plusYears(-75)
-        .with(TemporalAdjusters.firstDayOfYear())..initialDateTime.plusYears(75)
-        .with(TemporalAdjusters.lastDayOfYear())
-    if (initialDateTime !in dateRange) {
-        throw IllegalArgumentException("The initial Date Time supplied is not in the given Date Time Range")
+    if (initialDateTime.toLocalDate() !in dateRange) {
+        throw IllegalArgumentException("The initialDateTime supplied is not in the given dateRange")
     }
     val coroutineScope = rememberCoroutineScope()
 
-    val datePickerState = remember { DatePickerState(initialDateTime.toLocalDate()) }
+    val datePickerState = remember {
+        DatePickerState(
+            initialDateTime.toLocalDate(),
+            dateRange
+        )
+    }
+
     val timePickerState = remember {
         TimePickerState(
-            selectedTime = initialDateTime.toLocalTime().noSeconds(),
+            selectedTime = initialDateTime.toLocalTime().removeSeconds(),
             colors = timePickerColors,
             minimumTime = minimumTime,
             maximumTime = maximumTime,
@@ -85,7 +89,6 @@ fun MaterialDialog.datetimepicker(
                 content = {
                     DatePickerImpl(
                         state = datePickerState,
-                        dateRange = dateRange.start.toLocalDate()..dateRange.endInclusive.toLocalDate(),
                         backgroundColor = dialogBackgroundColor!!
                     )
                     TimePickerImpl(state = timePickerState) {

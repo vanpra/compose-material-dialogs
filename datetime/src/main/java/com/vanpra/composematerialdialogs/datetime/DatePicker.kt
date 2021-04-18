@@ -52,15 +52,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.vanpra.composematerialdialogs.MaterialDialog
+import com.vanpra.composematerialdialogs.datetime.util.ViewPager
+import com.vanpra.composematerialdialogs.datetime.util.ViewPagerScope
+import com.vanpra.composematerialdialogs.datetime.util.plusMonthsStartDate
 import com.vanpra.composematerialdialogs.datetime.util.shortLocalName
+import com.vanpra.composematerialdialogs.datetime.util.yearsDateRange
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.Period
 import java.time.format.TextStyle.FULL
-import java.time.temporal.TemporalAdjusters
 import java.util.Locale
 
-internal class DatePickerState(val current: LocalDate) {
+internal class DatePickerState(val current: LocalDate, val dateRange: ClosedRange<LocalDate>) {
     var selected by mutableStateOf(current)
 }
 
@@ -69,7 +72,7 @@ internal class DatePickerState(val current: LocalDate) {
  *
  * @param initialDate time to be shown to the user when the dialog is first shown.
  * Defaults to the current date if this is not set
- * @param closedDateRange the range of dates the user should be allowed to pick from
+ * @param dateRange the range of dates the user should be allowed to pick from
  * @param waitForPositiveButton if true the [onComplete] callback will only be called when the
  * positive button is pressed, otherwise it will be called on every input change
  * @param onComplete callback with a LocalDateTime object when the user completes their input
@@ -77,19 +80,17 @@ internal class DatePickerState(val current: LocalDate) {
 @Composable
 fun MaterialDialog.datepicker(
     initialDate: LocalDate = LocalDate.now(),
-    closedDateRange: ClosedRange<LocalDate>? = null,
+    dateRange: ClosedRange<LocalDate> = initialDate.yearsDateRange(75),
     waitForPositiveButton: Boolean = true,
     onComplete: (LocalDate) -> Unit = {}
 ) {
-    val dateRange = closedDateRange ?: initialDate.plusYears(-75).with(TemporalAdjusters.firstDayOfYear())..initialDate.plusYears(75).with(TemporalAdjusters.lastDayOfYear())
     if (initialDate !in dateRange) {
-        throw IllegalArgumentException("The initial Date supplied is not in the given Date Range")
+        throw IllegalArgumentException("The initialDate supplied is not in the given dateRange")
     }
-    val datePickerState = remember { DatePickerState(initialDate) }
+    val datePickerState = remember { DatePickerState(initialDate, dateRange) }
 
     DatePickerImpl(
         state = datePickerState,
-        dateRange = dateRange,
         backgroundColor = dialogBackgroundColor!!
     )
 
@@ -114,18 +115,21 @@ fun MaterialDialog.datepicker(
 internal fun DatePickerImpl(
     modifier: Modifier = Modifier,
     state: DatePickerState,
-    dateRange: ClosedRange<LocalDate>,
     backgroundColor: Color
 ) {
     /* Height doesn't include datepicker button height */
-    val yearRange = IntRange(dateRange.start.year, dateRange.endInclusive.year)
+    val yearRange = remember(state.dateRange) {
+        IntRange(state.dateRange.start.year, state.dateRange.endInclusive.year)
+    }
+
     Column(modifier.size(328.dp, 460.dp)) {
         CalendarHeader(state)
 
         val yearPickerShowing = remember { mutableStateOf(false) }
-        ViewPager(getIndexRange(dateRange)) {
+        val indexRange = remember { getIndexRange(state.dateRange) }
+        ViewPager(indexRange) {
             val viewDate = remember(index) { state.current.plusMonths(index.toLong()) }
-            CalendarViewHeader(viewDate, yearPickerShowing, dateRange)
+            CalendarViewHeader(viewDate, yearPickerShowing, state.dateRange)
 
             Box {
                 androidx.compose.animation.AnimatedVisibility(
@@ -139,7 +143,7 @@ internal fun DatePickerImpl(
                 ) {
                     YearPicker(yearRange, viewDate, yearPickerShowing, backgroundColor)
                 }
-                CalendarView(viewDate, state, dateRange)
+                CalendarView(viewDate, state)
             }
         }
     }
@@ -257,8 +261,9 @@ private fun ViewPagerScope.CalendarViewHeader(
                 )
             }
         }
-        val nextMonth = viewDate.with(TemporalAdjusters.firstDayOfMonth()).plusMonths(1) in dateRange
-        val previousMonth = viewDate.with(TemporalAdjusters.lastDayOfMonth()).plusMonths(-1) in dateRange
+
+        val nextMonth = remember(viewDate) { viewDate.plusMonthsStartDate(1) in dateRange }
+        val previousMonth = remember(viewDate) { viewDate.plusMonthsStartDate(-1) in dateRange }
 
         Row(
             Modifier
@@ -270,11 +275,16 @@ private fun ViewPagerScope.CalendarViewHeader(
                 contentDescription = "Previous Month",
                 modifier = Modifier
                     .size(24.dp)
-                    .clickable(onClick = { if (previousMonth) coroutineScope.launch { previous() } }),
+                    .clickable(
+                        onClick = { if (previousMonth) coroutineScope.launch { previous() } },
+                        enabled = previousMonth
+                    ),
                 colorFilter = ColorFilter.tint(
-                    if (previousMonth) MaterialTheme.colors.onBackground else MaterialTheme.colors.onBackground.copy(
-                        0.2f
-                    )
+                    if (previousMonth) {
+                        MaterialTheme.colors.onBackground
+                    } else {
+                        MaterialTheme.colors.onBackground.copy(0.2f)
+                    }
                 )
             )
 
@@ -285,11 +295,16 @@ private fun ViewPagerScope.CalendarViewHeader(
                 contentDescription = "Next Month",
                 modifier = Modifier
                     .size(24.dp)
-                    .clickable(onClick = { if (nextMonth) coroutineScope.launch { next() } }),
+                    .clickable(
+                        onClick = { if (nextMonth) coroutineScope.launch { next() } },
+                        enabled = nextMonth
+                    ),
                 colorFilter = ColorFilter.tint(
-                    if (nextMonth) MaterialTheme.colors.onBackground else MaterialTheme.colors.onBackground.copy(
-                        0.2f
-                    )
+                    if (nextMonth) {
+                        MaterialTheme.colors.onBackground
+                    } else {
+                        MaterialTheme.colors.onBackground.copy(0.2f)
+                    }
                 )
             )
         }
@@ -299,15 +314,21 @@ private fun ViewPagerScope.CalendarViewHeader(
 @Composable
 private fun CalendarView(
     viewDate: LocalDate,
-    datePickerData: DatePickerState,
-    dateRange: ClosedRange<LocalDate>
+    state: DatePickerState
 ) {
     Column(Modifier.padding(start = 12.dp, end = 12.dp)) {
         DayOfWeekHeader()
         val month = remember(viewDate) { getDates(viewDate) }
-        val possibleSelected = remember(datePickerData.selected, viewDate) {
-            viewDate.year == datePickerData.selected.year &&
-                viewDate.month == datePickerData.selected.month
+        val possibleSelected = remember(state.selected, viewDate) {
+            viewDate.year == state.selected.year && viewDate.month == state.selected.month
+        }
+        val firstMonthInRange = remember(viewDate) {
+            viewDate.month == state.dateRange.endInclusive.month &&
+                    viewDate.year == state.dateRange.endInclusive.year
+        }
+        val lastMonthInRange = remember(viewDate) {
+            viewDate.month == state.dateRange.start.month &&
+                    viewDate.year == state.dateRange.start.year
         }
 
         for (y in 0..5) {
@@ -318,22 +339,24 @@ private fun CalendarView(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 for (x in 0 until 7) {
-                    val day = month[y * 7 + x]
-                    val isValid: Boolean = if (viewDate.month == dateRange.endInclusive.month && viewDate.year == dateRange.endInclusive.year) {
-                        day <= dateRange.endInclusive.dayOfMonth
-                    } else if (viewDate.month == dateRange.start.month && viewDate.year == dateRange.start.year) {
-                        day >= dateRange.start.dayOfMonth
-                    } else {
-                        true
-                    }
-                    if (day != -1) {
-                        val selected = remember(datePickerData.selected, possibleSelected) {
-                            possibleSelected && day == datePickerData.selected.dayOfMonth
+                    val day = remember(month, x, y) { month[y * 7 + x] }
+
+                    val isValid: Boolean =
+                        remember(firstMonthInRange, lastMonthInRange) {
+                            when {
+                                firstMonthInRange -> day <= state.dateRange.endInclusive.dayOfMonth
+                                lastMonthInRange -> day >= state.dateRange.start.dayOfMonth
+                                else -> true
+                            }
                         }
+
+                    if (day != -1) {
+                        val selected = remember(state.selected, possibleSelected) {
+                            possibleSelected && day == state.selected.dayOfMonth
+                        }
+
                         DateSelectionBox(day, selected, isValid) {
-                            if (isValid)
-                                datePickerData.selected =
-                                    LocalDate.of(viewDate.year, viewDate.month, day)
+                            state.selected = LocalDate.of(viewDate.year, viewDate.month, day)
                         }
                     } else {
                         Box(Modifier.size(40.dp))
@@ -349,15 +372,17 @@ private fun CalendarView(
 }
 
 @Composable
-private fun DateSelectionBox(date: Int, selected: Boolean, valid: Boolean, onClick: () -> Unit) {
+private fun DateSelectionBox(date: Int, selected: Boolean, isValid: Boolean, onClick: () -> Unit) {
     val colors = MaterialTheme.colors
-    val backgroundColor = remember(selected, valid) {
-        if (selected) colors.primary else if (valid) Color.Transparent else Color.Transparent
+    val backgroundColor = remember(selected, isValid) {
+        if (selected) colors.primary else if (isValid) Color.Transparent else Color.Transparent
     }
-    val textColor = remember(selected, valid) {
-        if (selected) colors.onPrimary else if (valid) colors.onSurface else colors.onSurface.copy(
-            0.2f
-        )
+    val textColor = remember(selected, isValid) {
+        when {
+            selected -> colors.onPrimary
+            isValid -> colors.onSurface
+            else -> colors.onSurface.copy(0.2f)
+        }
     }
 
     Box(
@@ -366,6 +391,7 @@ private fun DateSelectionBox(date: Int, selected: Boolean, valid: Boolean, onCli
             .clickable(
                 interactionSource = MutableInteractionSource(),
                 onClick = onClick,
+                enabled = isValid,
                 indication = null
             ),
         contentAlignment = Alignment.Center
@@ -412,8 +438,12 @@ private fun DayOfWeekHeader() {
 // Input: Selected Date
 @Composable
 private fun CalendarHeader(datePickerData: DatePickerState) {
-    val month = datePickerData.selected.month.shortLocalName
-    val day = datePickerData.selected.dayOfWeek.shortLocalName
+    val month = remember(datePickerData.selected.month) {
+        datePickerData.selected.month.shortLocalName
+    }
+    val day = remember(datePickerData.selected.dayOfWeek) {
+        datePickerData.selected.dayOfWeek.shortLocalName
+    }
 
     Box(
         Modifier
