@@ -90,10 +90,8 @@ dialog.build {
 
 ## To Do
 
-1. Limit date selection range (ie. min/max date)
+1. Implement Date range selection 
 
-2. Implement Date range selection 
-
-3. Implement year selection
+2. Implement year selection
 
    

@@ -71,6 +71,7 @@ private data class ViewPagerImpl(
  */
 @Composable
 fun ViewPager(
+    indexRange: IntRange,
     modifier: Modifier = Modifier,
     onNext: () -> Unit = {},
     onPrevious: () -> Unit = {},
@@ -81,7 +82,6 @@ fun ViewPager(
         val coroutineScope = rememberCoroutineScope()
         val width = remember(constraints) { constraints.maxWidth.toFloat() }
         val offset = remember { Animatable(initialValue = 0f) }
-        offset.updateBounds(lowerBound = -width, upperBound = width)
 
         val draggableState = rememberDraggableState {
             coroutineScope.launch {
@@ -94,19 +94,30 @@ fun ViewPager(
         val anchors = remember { listOf(-width, 0f, width) }
         val index = remember { mutableStateOf(0) }
 
+        when {
+            index.value == indexRange.first && index.value == indexRange.last -> offset.updateBounds(0f, 0f)
+            index.value == indexRange.first -> offset.updateBounds(-width, 0f)
+            index.value == indexRange.last -> offset.updateBounds(0f, width)
+            else -> offset.updateBounds(-width, width)
+        }
+
         val increment: suspend (Int) -> Unit = { increment: Int ->
             val animationResult = offset.animateTo(width * -increment)
             if (animationResult.endReason == AnimationEndReason.Finished ||
                 animationResult.endReason == AnimationEndReason.BoundReached
             ) {
-                index.value += increment
-                offset.snapTo(0f)
+                if ((index.value + increment) in indexRange) {
+                    index.value += increment
+                    offset.snapTo(0f)
+                }
             }
         }
 
         val moveBy: suspend (Int) -> Unit = { pages: Int ->
-            index.value += pages
-            offset.snapTo(0f)
+            if ((index.value + pages) in indexRange) {
+                index.value += pages
+                offset.snapTo(0f)
+            }
         }
 
         val decayAnimation = defaultDecayAnimationSpec()
@@ -123,11 +134,15 @@ fun ViewPager(
 
                     if (flingResult.endReason == AnimationEndReason.Finished) {
                         if (flingResult.endState.value < 0) {
-                            index.value += 1
-                            onNext()
+                            if ((index.value + 1) in indexRange) {
+                                index.value += 1
+                                onNext()
+                            }
                         } else if (flingResult.endState.value > 0) {
-                            index.value -= 1
-                            onPrevious()
+                            if ((index.value - 1) in indexRange) {
+                                index.value -= 1
+                                onPrevious()
+                            }
                         }
                     }
                 },
@@ -147,9 +162,15 @@ fun ViewPager(
                 }
 
                 shownIndexes.forEach { x ->
-                    Column(Modifier.width(this@BoxWithConstraints.maxWidth).layoutId(x)) {
-                        val viewPagerImpl = ViewPagerImpl(index.value + x, increment, moveBy)
-                        content(viewPagerImpl)
+                    Column(
+                        Modifier
+                            .width(this@BoxWithConstraints.maxWidth)
+                            .layoutId(x)
+                    ) {
+                        if (index.value in indexRange) {
+                            val viewPagerImpl = ViewPagerImpl(index.value + x, increment, moveBy)
+                            content(viewPagerImpl)
+                        }
                     }
                 }
             },

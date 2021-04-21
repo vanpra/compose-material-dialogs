@@ -18,6 +18,7 @@ import com.vanpra.composematerialdialogs.datetime.util.noSeconds
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.temporal.TemporalAdjusters
 
 /**
  * @brief A combined date and time picker dialog
@@ -25,7 +26,7 @@ import java.time.LocalTime
  * @param initialDateTime The date and time to be shown to the user when the dialog is first shown.
  * Defaults to the current date and time if this is not set
  * @param timePickerColors see [TimePickerColors]
- * @param yearRange the range of years the user should be allowed to pick from
+ * @param closedDateRange the range of dates the user should be allowed to pick from
  * @param positiveButtonText text used for positive button label
  * @param negativeButtonText text used for negative button label
  * @param onComplete callback with a LocalDateTime object when the user completes their input
@@ -35,7 +36,7 @@ import java.time.LocalTime
 fun MaterialDialog.datetimepicker(
     initialDateTime: LocalDateTime = LocalDateTime.now(),
     timePickerColors: TimePickerColors = TimePickerDefaults.colors(),
-    yearRange: IntRange = IntRange(1900, 2100),
+    closedDateRange: ClosedRange<LocalDateTime>? = null,
     minimumTime: LocalTime = LocalTime.MIN,
     maximumTime: LocalTime = LocalTime.MAX,
     is24HourClock: Boolean = false,
@@ -44,6 +45,12 @@ fun MaterialDialog.datetimepicker(
     onCancel: () -> Unit = {},
     onComplete: (LocalDateTime) -> Unit = {}
 ) {
+    val dateRange = closedDateRange ?: initialDateTime.plusYears(-75)
+        .with(TemporalAdjusters.firstDayOfYear())..initialDateTime.plusYears(75)
+        .with(TemporalAdjusters.lastDayOfYear())
+    if (initialDateTime !in dateRange) {
+        throw IllegalArgumentException("The initial Date Time supplied is not in the given Date Time Range")
+    }
     val coroutineScope = rememberCoroutineScope()
 
     val datePickerState = remember { DatePickerState(initialDateTime.toLocalDate()) }
@@ -78,7 +85,7 @@ fun MaterialDialog.datetimepicker(
                 content = {
                     DatePickerImpl(
                         state = datePickerState,
-                        yearRange = yearRange,
+                        dateRange = dateRange.start.toLocalDate()..dateRange.endInclusive.toLocalDate(),
                         backgroundColor = dialogBackgroundColor!!
                     )
                     TimePickerImpl(state = timePickerState) {
