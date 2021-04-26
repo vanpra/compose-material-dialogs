@@ -1,0 +1,36 @@
+{
+    "logs": [
+        {
+            "outputFile": "/home/pranav/AndroidStudioProjects/compose-material-dialogs-new/sample/android/build/intermediates/incremental/mergeDebugResources/merged.dir/values-nl/values-nl.xml",
+            "map": [
+                {
+                    "source": "/home/pranav/.gradle/caches/transforms-3/0b48e3d07655a627724bfafa81b956c9/transformed/core-1.5.0-beta01/res/values-nl/values-nl.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "100",
+                        "endOffsets": "151"
+                    },
+                    "to": {
+                        "startLines": "30",
+                        "startColumns": "4",
+                        "startOffsets": "2915",
+                        "endColumns": "100",
+                        "endOffsets": "3011"
+                    }
+                },
+                {
+                    "source": "/home/pranav/.gradle/caches/transforms-3/9c496ba5451c16541d90d782b9752f31/transformed/appcompat-1.2.0/res/values-nl/values-nl.xml",
+                    "from": {
+                        "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "105,223,328,435,521,629,749,827,903,995,1089,1184,1278,1378,1472,1568,1663,1755,1847,1929,2040,2143,2242,2357,2471,2574,2729,2832",
+                        "endColumns": "117,104,106,85,107,119,77,75,91,93,94,93,99,93,95,94,91,91,81,110,102,98,114,113,102,154,102,82",
+                        "endOffsets": "218,323,430,516,624,744,822,898,990,1084,1179,1273,1373,1467,1563,1658,1750,1842,1924,2035,2138,2237,2352,2466,2569,2724,2827,2910"
+                    }
+                }
+            ]
+        }
+    ]
+}

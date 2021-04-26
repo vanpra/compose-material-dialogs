@@ -1,0 +1,2 @@
+com/vanpra/common/BuildConfig.java
+ com.vanpra.common.BuildConfig
