@@ -1,2 +1,0 @@
-com/vanpra/composematerialdialogs/BuildConfig.java
- com.vanpra.composematerialdialogs.BuildConfig
