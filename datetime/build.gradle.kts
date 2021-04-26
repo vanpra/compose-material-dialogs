@@ -40,12 +40,22 @@ android {
 
 dependencies {
     api(project(":core"))
+    implementation(Dependencies.Accompanist.pager)
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.1.5")
 }
 
+val artifactName = "datetime"
+val artifactGroup = "com.vanpra.compose-material-dialogs"
+val artifactVersion = Dependencies.ComposeMaterialDialogs.version
+
+val sourcesJar by tasks.creating(Jar::class) {
+    from(android.sourceSets.getByName("main").java.srcDirs)
+    archiveClassifier.set("sources")
+}
+
 val VERSION_NAME: String by project
-val mavenCentralRepositoryUsername: String by project
-val mavenCentralRepositoryPassword: String by project
+val mavenCentralRepositoryUsername: String? by project
+val mavenCentralRepositoryPassword: String? by project
 
 publishing {
     repositories {

@@ -123,20 +123,13 @@ fun MaterialDialog.colorChooser(
         }
         val swipeState = rememberSwipeableState(ColorPickerScreen.Palette)
 
-        val index = remember {
-            val callbackIndex = callbackCounter.getAndIncrement()
-            callbacks.add(callbackIndex) {}
-            callbackIndex
-        }
-
-        DisposableEffect(selectedColor.value) {
-            if (waitForPositiveButton) {
-                callbacks[index] = { onColorSelected(selectedColor.value) }
-            } else {
+        if (waitForPositiveButton) {
+            DialogCallback { onColorSelected(selectedColor.value) }
+        } else {
+            DisposableEffect(selectedColor.value) {
                 onColorSelected(selectedColor.value)
+                onDispose { }
             }
-
-            onDispose { callbacks[index] = {} }
         }
 
         Column(

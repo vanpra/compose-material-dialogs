@@ -26,6 +26,8 @@ allprojects {
         gradlePluginPortal()
         maven { url = uri("https://dl.bintray.com/kotlin/kotlin-eap") }
         maven { url = uri("https://kotlin.bintray.com/kotlinx/") }
+        maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots") }
+
     }
 
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
@@ -34,9 +36,10 @@ allprojects {
             useIR = true
             freeCompilerArgs = freeCompilerArgs + listOf(
                 "-Xopt-in=androidx.compose.material.ExperimentalMaterialApi",
-                "-Xopt-in=androidx.compose.animation.ExperimentalAnimationApi"
+                "-Xopt-in=androidx.compose.animation.ExperimentalAnimationApi",
+                "-Xopt-in=androidx.compose.foundation.ExperimentalFoundationApi",
+                "-Xopt-in=com.google.accompanist.pager.ExperimentalPagerApi"
             )
-
         }
     }
 }

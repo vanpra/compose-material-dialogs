@@ -49,6 +49,7 @@ dependencies {
     implementation(Dependencies.AndroidX.Compose.material)
     implementation(Dependencies.AndroidX.Compose.materialIconsExtended)
     implementation(Dependencies.AndroidX.composeActivity)
+    implementation(Dependencies.AndroidX.composeNav)
 
     implementation(Dependencies.AndroidX.coreKtx)
     implementation(Dependencies.AndroidX.appcompat)

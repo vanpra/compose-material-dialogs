@@ -24,7 +24,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,7 +45,9 @@ fun MaterialDialog.listItems(
     onClick: (index: Int, item: String) -> Unit = { _, _ -> }
 ) {
     BoxWithConstraints {
-        val modifier = Modifier.heightIn(max = maxHeight * listRatio).then(bottomPadding)
+        val modifier = Modifier
+            .heightIn(max = maxHeight * listRatio)
+            .then(bottomPadding)
 
         LazyColumn(modifier = modifier) {
             itemsIndexed(list) { index, it ->
@@ -90,7 +91,9 @@ fun <T> MaterialDialog.listItems(
 ) {
 
     BoxWithConstraints {
-        val modifier = Modifier.heightIn(max = maxHeight * listRatio).then(bottomPadding)
+        val modifier = Modifier
+            .heightIn(max = maxHeight * listRatio)
+            .then(bottomPadding)
 
         LazyColumn(modifier = modifier) {
             itemsIndexed(list) { index, it ->
@@ -105,7 +108,8 @@ fun <T> MaterialDialog.listItems(
                                 onClick(index, it)
                             },
                             enabled = isEnabled(index)
-                        ).padding(horizontal = 24.dp)
+                        )
+                        .padding(horizontal = 24.dp)
                 ) {
                     item(index, it)
                 }
@@ -134,21 +138,12 @@ fun MaterialDialog.listItemsMultiChoice(
 ) {
     var selectedItems by remember { mutableStateOf(initialSelection.toMutableList()) }
 
-    val callbackIndex = rememberSaveable {
-        val index = callbackCounter.getAndIncrement()
-
-        if (waitForPositiveButton) {
-            callbacks.add(index) { onCheckedChange(selectedItems) }
-        } else {
-            callbacks.add(index) { }
-        }
-
-        index
-    }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            callbacks[callbackIndex] = {}
+    if (waitForPositiveButton) {
+        DialogCallback { onCheckedChange(selectedItems) }
+    } else {
+        DisposableEffect(selectedItems) {
+            onCheckedChange(selectedItems)
+            onDispose { }
         }
     }
 
@@ -223,28 +218,14 @@ fun MaterialDialog.listItemsSingleChoice(
 ) {
     var selected by remember { mutableStateOf(initialSelection) }
 
-    val positiveEnabledIndex = rememberSaveable {
-        val index = positiveEnabledCounter.getAndIncrement()
-        positiveEnabled.add(index, selected != null)
-        index
-    }
+    val positiveEnabledIndex = addPositiveButtonEnabled(valid = selected != null)
 
-    val callbackIndex = rememberSaveable {
-        val index = callbackCounter.getAndIncrement()
-
-        if (waitForPositiveButton) {
-            callbacks.add(index) { onChoiceChange(selected!!) }
-        } else {
-            callbacks.add(index) { }
-        }
-
-        index
-    }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            callbacks[callbackIndex] = {}
-            setPositiveEnabled(positiveEnabledIndex, true)
+    if (waitForPositiveButton) {
+        DialogCallback { onChoiceChange(selected!!) }
+    } else {
+        DisposableEffect(selected) {
+            onChoiceChange(selected!!)
+            onDispose { }
         }
     }
 

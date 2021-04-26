@@ -8,6 +8,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -18,11 +19,9 @@ import com.vanpra.composematerialdialogs.MaterialDialog
  */
 @Composable
 fun DialogAndShowButton(buttonText: String, content: @Composable MaterialDialog.() -> Unit) {
-    val dialog = MaterialDialog()
+    val dialog = remember { MaterialDialog() }
 
-    dialog.build {
-        content()
-    }
+    dialog.build(content = content)
 
     TextButton(
         onClick = { dialog.show() },

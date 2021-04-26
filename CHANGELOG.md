@@ -2,6 +2,12 @@
 
 ### 0.3.3 - 2021-04-08
 
+  - Update compose version to 1.0.0-beta05
+  - Switch to using `HorizontalPager` from the Accompanist library for date picker
+  - Add `keyboardActions` parameter to the input component
+
+### 0.3.3 - 2021-04-08
+
   - Update compose version to 1.0.0-beta04
   - Modify dialog styling (elevation, shape, etc) to better match material spec (thanks **[ivaniskandar](https://github.com/ivaniskandar)**)
   - Fix issues when selection the hour 12 in the time picker

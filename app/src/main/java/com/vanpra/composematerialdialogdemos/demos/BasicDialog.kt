@@ -13,6 +13,11 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.input.ImeAction
 import com.vanpra.composematerialdialogdemos.DialogAndShowButton
 import com.vanpra.composematerialdialogdemos.R
+import com.vanpra.composematerialdialogs.buttons
+import com.vanpra.composematerialdialogs.iconTitle
+import com.vanpra.composematerialdialogs.input
+import com.vanpra.composematerialdialogs.message
+import com.vanpra.composematerialdialogs.title
 
 /**
  * @brief Basic Dialog Demos

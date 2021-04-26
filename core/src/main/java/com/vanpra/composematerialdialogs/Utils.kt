@@ -29,3 +29,5 @@ internal fun ThemedDialog(onCloseRequest: () -> Unit, children: @Composable () -
 
 internal fun List<Pair<MaterialDialogButtonTypes, Placeable>>.buttons(type: MaterialDialogButtonTypes) =
     this.filter { it.first == type }.map { it.second }
+
+internal val emptyCallback = {}

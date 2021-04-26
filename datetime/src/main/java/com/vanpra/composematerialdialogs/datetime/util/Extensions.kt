@@ -54,3 +54,8 @@ internal fun LocalDate.plusMonthsStartDate(months: Long) =
 
 internal fun LocalDate.plusMonthsEndDate(months: Long) =
     this.plusMonths(months).with(TemporalAdjusters.lastDayOfMonth())
+
+internal fun ClosedRange<LocalDate>.startYear() = this.start.year
+internal fun ClosedRange<LocalDate>.endYear() = this.endInclusive.year
+internal fun ClosedRange<LocalDate>.yearRange() = IntRange(startYear(), endYear())
+

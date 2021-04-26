@@ -1,5 +1,6 @@
 package com.vanpra.composematerialdialogs.datetime
 
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
@@ -19,7 +20,10 @@ import androidx.compose.foundation.layout.paddingFromBaseline
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.GridCells
+import androidx.compose.foundation.lazy.LazyVerticalGrid
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -32,7 +36,6 @@ import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,20 +54,25 @@ import androidx.compose.ui.text.font.FontWeight.Companion.W600
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.PagerDefaults
+import com.google.accompanist.pager.PagerState
+import com.google.accompanist.pager.rememberPagerState
 import com.vanpra.composematerialdialogs.MaterialDialog
-import com.vanpra.composematerialdialogs.datetime.util.ViewPager
-import com.vanpra.composematerialdialogs.datetime.util.ViewPagerScope
+import com.vanpra.composematerialdialogs.datetime.util.endYear
 import com.vanpra.composematerialdialogs.datetime.util.plusMonthsStartDate
 import com.vanpra.composematerialdialogs.datetime.util.shortLocalName
+import com.vanpra.composematerialdialogs.datetime.util.startYear
+import com.vanpra.composematerialdialogs.datetime.util.yearRange
 import com.vanpra.composematerialdialogs.datetime.util.yearsDateRange
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.time.Period
 import java.time.format.TextStyle.FULL
 import java.util.Locale
 
 internal class DatePickerState(val current: LocalDate, val dateRange: ClosedRange<LocalDate>) {
     var selected by mutableStateOf(current)
+    var yearPickerShowing by mutableStateOf(false)
 }
 
 /**
@@ -94,20 +102,13 @@ fun MaterialDialog.datepicker(
         backgroundColor = dialogBackgroundColor!!
     )
 
-    val index = remember {
-        val callbackIndex = callbackCounter.getAndIncrement()
-        callbacks.add(callbackIndex) {}
-        callbackIndex
-    }
-
-    DisposableEffect(datePickerState.selected) {
-        if (waitForPositiveButton) {
-            callbacks[index] = { onComplete(datePickerState.selected) }
-        } else {
+    if (waitForPositiveButton) {
+        DialogCallback { onComplete(datePickerState.selected) }
+    } else {
+        DisposableEffect(datePickerState.selected) {
             onComplete(datePickerState.selected)
+            onDispose { }
         }
-
-        onDispose { callbacks[index] = {} }
     }
 }
 
@@ -117,76 +118,84 @@ internal fun DatePickerImpl(
     state: DatePickerState,
     backgroundColor: Color
 ) {
-    /* Height doesn't include datepicker button height */
-    val yearRange = remember(state.dateRange) {
-        IntRange(state.dateRange.start.year, state.dateRange.endInclusive.year)
-    }
+    val initialPagerState = remember { getNumberOfPages(state.dateRange, state.current) }
+    val pagerState = rememberPagerState(
+        pageCount = initialPagerState.first,
+        initialPage = initialPagerState.second
+    )
 
     Column(modifier.size(328.dp, 460.dp)) {
         CalendarHeader(state)
+        HorizontalPager(
+            state = pagerState,
+            verticalAlignment = Alignment.Top,
+            flingBehavior = PagerDefaults.defaultPagerFlingConfig(
+                state = pagerState,
+                snapAnimationSpec = spring(stiffness = 1000f)
+            )
+        ) { page ->
+            val viewDate = remember(page) {
+                LocalDate.of(
+                    state.dateRange.startYear() + (page.toLong() / 12).toInt(),
+                    (page.toLong() % 12).toInt() + 1,
+                    1
+                )
+            }
 
-        val yearPickerShowing = remember { mutableStateOf(false) }
-        val indexRange = remember { getIndexRange(state.dateRange) }
-        ViewPager(indexRange) {
-            val viewDate = remember(index) { state.current.plusMonths(index.toLong()) }
-            CalendarViewHeader(viewDate, yearPickerShowing, state.dateRange)
+            Column {
+                CalendarViewHeader(viewDate, state, pagerState)
+                Box {
+                    androidx.compose.animation.AnimatedVisibility(
+                        state.yearPickerShowing,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .zIndex(0.7f)
+                            .clipToBounds(),
+                        enter = slideInVertically({ -it }),
+                        exit = slideOutVertically({ -it })
+                    ) {
+                        YearPicker(
+                            viewDate,
+                            state,
+                            pagerState,
+                            backgroundColor
+                        )
+                    }
 
-            Box {
-                androidx.compose.animation.AnimatedVisibility(
-                    yearPickerShowing.value,
-                    Modifier
-                        .fillMaxSize()
-                        .zIndex(0.7f)
-                        .clipToBounds(),
-                    enter = slideInVertically({ -it }),
-                    exit = slideOutVertically({ -it })
-                ) {
-                    YearPicker(yearRange, viewDate, yearPickerShowing, backgroundColor)
+                    CalendarView(viewDate, state)
                 }
-                CalendarView(viewDate, state)
             }
         }
     }
 }
 
 @Composable
-private fun ViewPagerScope.YearPicker(
-    yearRange: IntRange,
+private fun YearPicker(
     viewDate: LocalDate,
-    yearPickerShowing: MutableState<Boolean>,
+    state: DatePickerState,
+    pagerState: PagerState,
     backgroundColor: Color
 ) {
-    val state = rememberLazyListState((viewDate.year - yearRange.first) / 3)
+    val yearPickerState = rememberLazyListState((viewDate.year - state.dateRange.start.year) / 3)
     val coroutineScope = rememberCoroutineScope()
 
-    LazyColumn(
-        modifier = Modifier
-            .background(backgroundColor)
-            .padding(start = 24.dp, end = 24.dp),
-        state = state
+    LazyVerticalGrid(
+        cells = GridCells.Fixed(3),
+        state = yearPickerState,
+        modifier = Modifier.background(backgroundColor)
     ) {
-        for (i in yearRange step 3) {
-            item {
-                Row {
-                    for (x in 0 until 3) {
-                        val year = remember(yearRange) { i + x }
-                        if (year in yearRange) {
-                            val selected = remember(yearRange, viewDate) { year == viewDate.year }
-                            YearPickerItem(year = year, selected = selected) {
-                                if (!selected) {
-                                    coroutineScope.launch {
-                                        plusPages((year - viewDate.year) * 12)
-                                    }
-                                }
-                                yearPickerShowing.value = false
-                            }
 
-                            if (x != 2) {
-                                Spacer(modifier = Modifier.width(8.dp))
-                            }
-                        }
+        itemsIndexed(state.dateRange.yearRange().toList()) { _, item ->
+            val selected = remember { item == viewDate.year }
+            YearPickerItem(year = item, selected = selected) {
+                if (!selected) {
+                    coroutineScope.launch {
+                        pagerState.scrollToPage(
+                            pagerState.currentPage + (item - viewDate.year) * 12
+                        )
                     }
                 }
+                state.yearPickerShowing = false
             }
         }
     }
@@ -194,16 +203,14 @@ private fun ViewPagerScope.YearPicker(
 
 @Composable
 private fun YearPickerItem(year: Int, selected: Boolean, onClick: () -> Unit) {
-    val backgroundColor =
-        if (selected) MaterialTheme.colors.primary else Color.Transparent
-    val textColor = if (selected) MaterialTheme.colors.onPrimary else MaterialTheme.colors.onSurface
+    val colors = MaterialTheme.colors
 
     Box(Modifier.size(88.dp, 52.dp), contentAlignment = Alignment.Center) {
         Box(
             Modifier
                 .size(72.dp, 36.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .background(backgroundColor)
+                .background(if (selected) colors.primary else Color.Transparent)
                 .clickable(
                     onClick = onClick,
                     interactionSource = MutableInteractionSource(),
@@ -211,23 +218,29 @@ private fun YearPickerItem(year: Int, selected: Boolean, onClick: () -> Unit) {
                 ),
             contentAlignment = Alignment.Center
         ) {
-            Text(year.toString(), style = TextStyle(color = textColor, fontSize = 18.sp))
+            Text(
+                year.toString(),
+                style = TextStyle(
+                    color = if (selected) colors.onPrimary else colors.onSurface,
+                    fontSize = 18.sp
+                )
+            )
         }
     }
 }
 
 @Composable
-private fun ViewPagerScope.CalendarViewHeader(
+private fun CalendarViewHeader(
     viewDate: LocalDate,
-    yearPickerShowing: MutableState<Boolean>,
-    dateRange: ClosedRange<LocalDate>
+    state: DatePickerState,
+    pagerState: PagerState
 ) {
     val coroutineScope = rememberCoroutineScope()
-
-    val month = remember(viewDate) { viewDate.month.getDisplayName(FULL, Locale.getDefault()) }
-    val year = remember(viewDate) { viewDate.year }
-    val yearDropdownIcon = remember(yearPickerShowing.value) {
-        if (yearPickerShowing.value) Icons.Default.ArrowDropUp else Icons.Default.ArrowDropDown
+    val month = remember(viewDate.month) {
+        viewDate.month.getDisplayName(FULL, Locale.getDefault())
+    }
+    val yearDropdownIcon = remember(state.yearPickerShowing) {
+        if (state.yearPickerShowing) Icons.Default.ArrowDropUp else Icons.Default.ArrowDropDown
     }
 
     Box(
@@ -241,10 +254,10 @@ private fun ViewPagerScope.CalendarViewHeader(
             Modifier
                 .fillMaxHeight()
                 .align(Alignment.CenterStart)
-                .clickable(onClick = { yearPickerShowing.value = !yearPickerShowing.value })
+                .clickable(onClick = { state.yearPickerShowing = !state.yearPickerShowing })
         ) {
             Text(
-                "$month $year",
+                "$month ${viewDate.year}",
                 modifier = Modifier
                     .paddingFromBaseline(top = 16.dp)
                     .wrapContentSize(Alignment.Center),
@@ -262,8 +275,9 @@ private fun ViewPagerScope.CalendarViewHeader(
             }
         }
 
-        val nextMonth = remember(viewDate) { viewDate.plusMonthsStartDate(1) in dateRange }
-        val previousMonth = remember(viewDate) { viewDate.plusMonthsStartDate(-1) in dateRange }
+        val nextMonth = remember(viewDate) { viewDate.plusMonthsStartDate(1) in state.dateRange }
+        val previousMonth =
+            remember(viewDate) { viewDate.plusMonthsStartDate(-1) in state.dateRange }
 
         Row(
             Modifier
@@ -276,8 +290,13 @@ private fun ViewPagerScope.CalendarViewHeader(
                 modifier = Modifier
                     .size(24.dp)
                     .clickable(
-                        onClick = { if (previousMonth) coroutineScope.launch { previous() } },
-                        enabled = previousMonth
+                        onClick = {
+                            if (previousMonth) {
+                                coroutineScope.launch {
+                                    pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                                }
+                            }
+                        }
                     ),
                 colorFilter = ColorFilter.tint(
                     if (previousMonth) {
@@ -296,8 +315,13 @@ private fun ViewPagerScope.CalendarViewHeader(
                 modifier = Modifier
                     .size(24.dp)
                     .clickable(
-                        onClick = { if (nextMonth) coroutineScope.launch { next() } },
-                        enabled = nextMonth
+                        onClick = {
+                            if (nextMonth) {
+                                coroutineScope.launch {
+                                    pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                                }
+                            }
+                        }
                     ),
                 colorFilter = ColorFilter.tint(
                     if (nextMonth) {
@@ -318,7 +342,7 @@ private fun CalendarView(
 ) {
     Column(Modifier.padding(start = 12.dp, end = 12.dp)) {
         DayOfWeekHeader()
-        val month = remember(viewDate) { getDates(viewDate) }
+        val calendarDatesData = remember(viewDate) { getDates(viewDate) }
         val possibleSelected = remember(state.selected, viewDate) {
             viewDate.year == state.selected.year && viewDate.month == state.selected.month
         }
@@ -331,40 +355,26 @@ private fun CalendarView(
                     viewDate.year == state.dateRange.start.year
         }
 
-        for (y in 0..5) {
-            Row(
-                modifier = Modifier
-                    .height(40.dp)
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                for (x in 0 until 7) {
-                    val day = remember(month, x, y) { month[y * 7 + x] }
+        LazyVerticalGrid(cells = GridCells.Fixed(7)) {
+            for (x in 0 until calendarDatesData.first) {
+                item { Box(Modifier.size(40.dp)) }
+            }
 
-                    val isValid: Boolean =
-                        remember(firstMonthInRange, lastMonthInRange) {
-                            when {
-                                firstMonthInRange -> day <= state.dateRange.endInclusive.dayOfMonth
-                                lastMonthInRange -> day >= state.dateRange.start.dayOfMonth
-                                else -> true
-                            }
-                        }
+            items(calendarDatesData.second) {
+                val selected = remember(possibleSelected, state.selected) {
+                    possibleSelected && it == state.selected.dayOfMonth
+                }
 
-                    if (day != -1) {
-                        val selected = remember(state.selected, possibleSelected) {
-                            possibleSelected && day == state.selected.dayOfMonth
-                        }
-
-                        DateSelectionBox(day, selected, isValid) {
-                            state.selected = LocalDate.of(viewDate.year, viewDate.month, day)
-                        }
-                    } else {
-                        Box(Modifier.size(40.dp))
+                val isValid = remember(it) {
+                    when {
+                        firstMonthInRange -> it <= state.dateRange.endInclusive.dayOfMonth
+                        lastMonthInRange -> it >= state.dateRange.start.dayOfMonth
+                        else -> true
                     }
+                }
 
-                    if (x != 6) {
-                        Spacer(modifier = Modifier.width(4.dp))
-                    }
+                DateSelectionBox(it, selected, isValid) {
+                    state.selected = LocalDate.of(viewDate.year, viewDate.month, it)
                 }
             }
         }
@@ -372,7 +382,12 @@ private fun CalendarView(
 }
 
 @Composable
-private fun DateSelectionBox(date: Int, selected: Boolean, isValid: Boolean, onClick: () -> Unit) {
+private fun DateSelectionBox(
+    date: Int,
+    selected: Boolean,
+    isValid: Boolean,
+    onClick: () -> Unit
+) {
     val colors = MaterialTheme.colors
     val backgroundColor = remember(selected, isValid) {
         if (selected) colors.primary else if (isValid) Color.Transparent else Color.Transparent
@@ -474,35 +489,29 @@ private fun CalendarHeader(datePickerData: DatePickerState) {
     }
 }
 
-private fun getDates(date: LocalDate): List<Int> {
-    val dates = mutableListOf<Int>()
-
-    val firstDate = LocalDate.of(date.year, date.monthValue, 1)
+private fun getDates(date: LocalDate): Pair<Int, List<Int>> {
+    val numDays = date.month.length(date.isLeapYear)
+    val firstDate = date.withDayOfMonth(1)
     val firstDay = firstDate.dayOfWeek.value % 7
-    val numDays = date.month.length(firstDate.isLeapYear)
 
-    var counter = 1
-    for (y in 0..5) {
-        for (x in 0..6) {
-            if ((y == 0 && x < firstDay && firstDay != 0) || counter > numDays) {
-                dates.add(-1)
-            } else {
-                dates.add(counter)
-                counter += 1
-            }
-        }
-    }
+    val dateRange = IntRange(1, numDays).toList()
 
-    return dates
+    return Pair(firstDay, dateRange)
 }
 
-private fun getIndexRange(dateRange: ClosedRange<LocalDate>): IntRange {
-    val today = LocalDate.now().withDayOfMonth(1)
-    val pastMonths = Period.between(dateRange.start.withDayOfMonth(1), today).months
-    val pastYear = Period.between(dateRange.start.withDayOfMonth(1), today).years
-    val futureMonths = Period.between(today, dateRange.endInclusive.withDayOfMonth(1)).months
-    val futureYears = Period.between(today, dateRange.endInclusive.withDayOfMonth(1)).years
-    val start = -(pastMonths + (pastYear * 12))
-    val end = futureMonths + (futureYears * 12)
-    return start..end
+private fun getNumberOfPages(
+    dateRange: ClosedRange<LocalDate>,
+    current: LocalDate
+): Pair<Int, Int> {
+    val startYear = dateRange.startYear()
+    val endYear = dateRange.endYear()
+
+    val rawMonths = (endYear - startYear) * 12
+    val startMonths = dateRange.start.monthValue - 1
+    val endMonths = 12 - dateRange.endInclusive.monthValue
+
+    val totalMonths = rawMonths - startMonths - endMonths
+    val currentMonth = (current.year - startYear) * 12 + current.monthValue - 1
+
+    return Pair(totalMonths, currentMonth)
 }
