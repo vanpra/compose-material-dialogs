@@ -8,7 +8,8 @@ android {
         compileSdk = 30
         targetSdk = 30
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.karumi.shot.ShotTestRunner"
+        testApplicationId = "com.vanpra.composematerialdialogs.color.test"
     }
 
     buildTypes {
@@ -23,6 +24,15 @@ android {
 
     buildFeatures.compose = true
 
+    packagingOptions.excludes.addAll(
+        listOf(
+            "META-INF/LICENSE",
+            "META-INF/AL2.0",
+            "META-INF/**",
+            "META-INF/*.kotlin_module"
+        )
+    )
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -35,6 +45,10 @@ android {
 
 dependencies {
     api(project(":core"))
+}
+
+shot {
+    tolerance = 1.0 // Tolerance needed for CI
 }
 
 val VERSION_NAME: String by project

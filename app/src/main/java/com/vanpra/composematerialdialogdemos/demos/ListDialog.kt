@@ -107,19 +107,23 @@ fun BasicListDialogDemo() {
  */
 @Composable
 fun MultiSelectionDemo() {
-    var initialSelection by remember { mutableStateOf(listOf(3, 5)) }
+    var initialSelection by remember { mutableStateOf(setOf(3, 5)) }
 
     DialogAndShowButton(buttonText = "Multi-Selection Dialog") {
         title(res = R.string.labels_dialog_title)
-        listItemsMultiChoice(labels)
+        listItemsMultiChoice(labels) {
+            println(it)
+        }
         defaultListButtons()
     }
 
     DialogAndShowButton(buttonText = "Multi-Selection Dialog with disabled items") {
-        val disabledLabels = listOf(1, 3, 4)
+        val disabledLabels = setOf(1, 3, 4)
 
         title(res = R.string.labels_dialog_title)
-        listItemsMultiChoice(labels, disabledIndices = disabledLabels)
+        listItemsMultiChoice(labels, disabledIndices = disabledLabels) {
+            println(it)
+        }
         defaultListButtons()
     }
 
@@ -145,12 +149,14 @@ fun SingleSelectionDemo() {
 
     DialogAndShowButton(buttonText = "Single Selection Dialog") {
         title(res = R.string.ringtone_dialog_title)
-        listItemsSingleChoice(ringtones)
+        listItemsSingleChoice(ringtones) {
+            println(it)
+        }
         defaultListButtons()
     }
 
     DialogAndShowButton(buttonText = "Single Selection Dialog with disabled items") {
-        val disabledRingtones = listOf(2, 4, 5)
+        val disabledRingtones = setOf(2, 4, 5)
 
         title(res = R.string.ringtone_dialog_title)
         listItemsSingleChoice(ringtones, disabledIndices = disabledRingtones)

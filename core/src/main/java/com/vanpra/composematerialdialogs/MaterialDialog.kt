@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import java.util.concurrent.atomic.AtomicInteger
@@ -187,7 +188,8 @@ class MaterialDialog(
                         .fillMaxWidth()
                         .padding(vertical = 40.dp)
                         .sizeIn(maxWidth = 560.dp, maxHeight = 560.dp)
-                        .clipToBounds(),
+                        .clipToBounds()
+                        .testTag("dialog"),
                     shape = shape,
                     color = backgroundColor,
                     border = border,

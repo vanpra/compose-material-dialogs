@@ -1,6 +1,6 @@
 repositories {
     google()
-    jcenter()
+    mavenCentral()
     maven { url = uri("https://dl.bintray.com/kotlin/kotlin-eap") }
 }
 
@@ -8,13 +8,12 @@ plugins {
     `kotlin-dsl`
 }
 
-kotlinDslPluginOptions {
-    experimentalWarning.set(false)
-}
-
 dependencies {
-    implementation("com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5")
-    implementation("org.jfrog.buildinfo:build-info-extractor-gradle:4.17.2")
+    modules {
+        module("org.jetbrains.trove4j:trove4j") {
+            replacedBy("org.jetbrains.intellij.deps:trove4j")
+        }
+    }
 }
 
 gradlePlugin {

@@ -1,0 +1,9 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.vanpra.composematerialdialogs.datetime.test"
+    android:sharedUserId="com.vanpra.composematerialdialogs.uid">
+    <application>
+        <activity
+            android:name="androidx.activity.ComponentActivity"
+            android:theme="@android:style/Theme.Material.Light.NoActionBar" />
+    </application>
+</manifest>

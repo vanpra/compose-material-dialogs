@@ -18,8 +18,9 @@
 
   - Update compose version to 1.0.0-beta06
   - Add more style customisation's to date and time pickers
-- Fix date picker selection bug
-- Make performance improvements to date picker
+  - Fix date picker selection bug
+  - Make performance optimisations to the date picker
+
 
 ### 0.3.4 - 2021-04-22
 

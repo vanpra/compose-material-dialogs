@@ -1,0 +1,43 @@
+site_name: 'Compose Material Dialogs'
+site_description: 'A Material Dialog Builder for Jetpack Compose'
+site_author: 'Pranav Maganti'
+site_url: 'https://vanpra.github.io/compose-material-dialogs/'
+remote_branch: gh-pages
+
+docs_dir: docs
+
+repo_name: 'compose-material-dialogs'
+repo_url: 'https://github.com/vanpra/compose-material-dialogs'
+
+nav:
+  - 'Overview': index.md
+  - 'Core':
+    - 'Guide': core.md
+    - 'API': api/core/index.html
+  - 'Color':
+    - 'Guide': color.md
+    - 'API': api/color/index.html
+  - 'DateTime':
+    - 'Guide': datetime.md
+    - 'API': api/datetime/index.html
+  - 'Custom':
+    - 'Guide': custom.md
+
+theme:
+  name: material
+  palette:
+    - deep purple: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode

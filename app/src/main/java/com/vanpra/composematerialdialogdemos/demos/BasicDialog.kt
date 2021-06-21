@@ -10,7 +10,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.input.ImeAction
@@ -25,7 +24,6 @@ import com.vanpra.composematerialdialogs.title
 /**
  * @brief Basic Dialog Demos
  */
-@ExperimentalComposeUiApi
 @Composable
 fun BasicDialogDemo() {
     DialogAndShowButton(buttonText = "Basic Dialog") {
