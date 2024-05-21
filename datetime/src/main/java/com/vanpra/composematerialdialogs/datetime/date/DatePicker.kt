@@ -4,6 +4,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -334,7 +335,8 @@ private fun CalendarView(
                 }
                 val date = viewDate.withDayOfMonth(it)
                 val enabled = allowedDateValidator(date)
-                DateSelectionBox(it, selected, state.colors, enabled) {
+                val today = date.isEqual(LocalDate.now())
+                DateSelectionBox(it, selected, state.colors, enabled, today) {
                     state.selected = date
                 }
             }
@@ -348,6 +350,7 @@ private fun DateSelectionBox(
     selected: Boolean,
     colors: DatePickerColors,
     enabled: Boolean,
+    today: Boolean,
     onClick: () -> Unit
 ) {
     Box(
@@ -361,14 +364,20 @@ private fun DateSelectionBox(
             ),
         contentAlignment = Alignment.Center
     ) {
+        val todayModifier = Modifier
+            .size(32.dp)
+            .border(1.dp, color = colors.dateBackgroundColor(true).value, shape = CircleShape)
+            .wrapContentSize(Alignment.Center)
+            .alpha(if (enabled) ContentAlpha.high else ContentAlpha.disabled)
+        val modifier = Modifier
+            .size(32.dp)
+            .clip(CircleShape)
+            .background(colors.dateBackgroundColor(selected).value)
+            .wrapContentSize(Alignment.Center)
+            .alpha(if (enabled) ContentAlpha.high else ContentAlpha.disabled)
         Text(
             date.toString(),
-            modifier = Modifier
-                .size(32.dp)
-                .clip(CircleShape)
-                .background(colors.dateBackgroundColor(selected).value)
-                .wrapContentSize(Alignment.Center)
-                .alpha(if (enabled) ContentAlpha.high else ContentAlpha.disabled),
+            modifier = if (today && !selected) todayModifier else modifier,
             style = TextStyle(
                 color = colors.dateTextColor(selected).value,
                 fontSize = 12.sp
