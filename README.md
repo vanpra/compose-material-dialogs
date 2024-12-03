@@ -6,13 +6,13 @@
 
 **Latest Stable Library Version: 0.9.0 (Supports Compose 1.2.1)**
 
-### [See Releases and Changelog](https://github.com/vanpra/compose-material-dialogs/blob/main/CHANGELOG.md)
+### [See Releases and Changelog](https://github.com/PranavMaganti/compose-material-dialogs/blob/main/CHANGELOG.md)
 
 ## Core
 
-#### [Core Documentation](https://vanpra.github.io/compose-material-dialogs/Core)
+#### [Core Documentation](https://PranavMaganti.github.io/compose-material-dialogs/Core)
 
-![](https://raw.githubusercontent.com/vanpra/compose-material-dialogs/main/imgs/full_core.png)
+![](https://raw.githubusercontent.com/PranavMaganti/compose-material-dialogs/main/imgs/full_core.png)
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.vanpra.compose-material-dialogs/core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.vanpra.compose-material-dialogs/core)
 
@@ -26,9 +26,9 @@ dependencies {
 
 ## Date and Time Picker
 
-#### [Date and Time Picker Documentation](https://vanpra.github.io/compose-material-dialogs/DateTimePicker)
+#### [Date and Time Picker Documentation](https://PranavMaganti.github.io/compose-material-dialogs/DateTimePicker)
 
-![](https://raw.githubusercontent.com/vanpra/compose-material-dialogs/main/imgs/date_and_time.png)
+![](https://raw.githubusercontent.com/PranavMaganti/compose-material-dialogs/main/imgs/date_and_time.png)
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.vanpra.compose-material-dialogs/datetime/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.vanpra.compose-material-dialogs/datetime)
 
@@ -42,9 +42,9 @@ dependencies {
 
 ## Color Picker
 
-#### [Color Picker Documentation](https://vanpra.github.io/compose-material-dialogs/ColorPicker)
+#### [Color Picker Documentation](https://PranavMaganti.github.io/compose-material-dialogs/ColorPicker)
 
-![](https://raw.githubusercontent.com/vanpra/compose-material-dialogs/main/imgs/color_picker.png)
+![](https://raw.githubusercontent.com/PranavMaganti/compose-material-dialogs/main/imgs/color_picker.png)
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.vanpra.compose-material-dialogs/color/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.vanpra.compose-material-dialogs/color)
 
@@ -58,7 +58,7 @@ dependencies {
 
 ## For Developers
 
-If you would like to help by contributing to the library have a look at our [Contribution Guide](https://github.com/vanpra/compose-material-dialogs/blob/main/CONTRIBUTING.md) to get started
+If you would like to help by contributing to the library have a look at our [Contribution Guide](https://github.com/PranavMaganti/compose-material-dialogs/blob/main/CONTRIBUTING.md) to get started
 
 ## Credits
 
