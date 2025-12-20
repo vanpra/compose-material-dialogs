@@ -1,65 +1,19 @@
-# Compose Material Dialogs
+[![official project](http://jb.gg/badges/official.svg)](https://github.com/JetBrains#jetbrains-on-github)
 
-:rocket:  Easy to use library to help you build complex dialogs using Jetpack Compose :rocket:
+# Multiplatform library template
 
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/ae8d455118164f43a24732761a970cc8)](https://www.codacy.com/gh/vanpra/compose-material-dialogs/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=vanpra/compose-material-dialogs&amp;utm_campaign=Badge_Grade)![Build & Test](https://github.com/vanpra/compose-material-dialogs/actions/workflows/main.yml/badge.svg)
+## What is it?
 
-**Latest Stable Library Version: 0.9.0 (Supports Compose 1.2.1)**
+This repository contains a simple library project, intended to demonstrate a [Kotlin Multiplatform](https://kotlinlang.org/docs/multiplatform.html) library that is deployable to [Maven Central](https://central.sonatype.com/).
 
-### [See Releases and Changelog](https://github.com/vanpra/compose-material-dialogs/blob/main/CHANGELOG.md)
+The library has only one function: generate the [Fibonacci sequence](https://en.wikipedia.org/wiki/Fibonacci_sequence) starting from platform-provided numbers. Also, it has a test for each platform just to be sure that tests run.
 
-## Core
+Note that no other actions or tools usually required for the library development are set up, such as [tracking of backwards compatibility](https://kotlinlang.org/docs/jvm-api-guidelines-backward-compatibility.html#tools-designed-to-enforce-backward-compatibility), explicit API mode, licensing, contribution guideline, code of conduct and others. You can find a guide for best practices for designing Kotlin libraries [here](https://kotlinlang.org/docs/api-guidelines-introduction.html).
 
-#### [Core Documentation](https://vanpra.github.io/compose-material-dialogs/Core)
+## Guide
 
-![](https://raw.githubusercontent.com/vanpra/compose-material-dialogs/main/imgs/full_core.png)
+Please find the detailed guide [here](https://www.jetbrains.com/help/kotlin-multiplatform-dev/multiplatform-publish-libraries.html).
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.vanpra.compose-material-dialogs/core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.vanpra.compose-material-dialogs/core)
-
-```gradle
-dependencies {
-  ...
-  implementation "io.github.vanpra.compose-material-dialogs:core:${version}" 
-  ...
-}
-```
-
-## Date and Time Picker
-
-#### [Date and Time Picker Documentation](https://vanpra.github.io/compose-material-dialogs/DateTimePicker)
-
-![](https://raw.githubusercontent.com/vanpra/compose-material-dialogs/main/imgs/date_and_time.png)
-
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.vanpra.compose-material-dialogs/datetime/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.vanpra.compose-material-dialogs/datetime)
-
-```gradle
-dependencies {
-  ...
-  implementation "io.github.vanpra.compose-material-dialogs:datetime:${version}"
-  ...
-}
-```
-
-## Color Picker
-
-#### [Color Picker Documentation](https://vanpra.github.io/compose-material-dialogs/ColorPicker)
-
-![](https://raw.githubusercontent.com/vanpra/compose-material-dialogs/main/imgs/color_picker.png)
-
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.vanpra.compose-material-dialogs/color/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.vanpra.compose-material-dialogs/color)
-
-```gradle
-dependencies {
-  ...
-  implementation "io.github.vanpra.compose-material-dialogs:color:${version}"
-  ...
-}
-```
-
-## For Developers
-
-If you would like to help by contributing to the library have a look at our [Contribution Guide](https://github.com/vanpra/compose-material-dialogs/blob/main/CONTRIBUTING.md) to get started
-
-## Credits
-
-This library's design is heavily inspired by https://github.com/afollestad/material-dialogs
+# Other resources
+* [Publishing via the Central Portal](https://central.sonatype.org/publish-ea/publish-ea-guide/)
+* [Gradle Maven Publish Plugin \- Publishing to Maven Central](https://vanniktech.github.io/gradle-maven-publish-plugin/central/)

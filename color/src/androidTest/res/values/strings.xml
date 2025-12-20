@@ -1,9 +1,0 @@
-<resources>
-    <string name="location_dialog_message">Let us help apps determine location. This means sending
-        anonymous location data to us, even when no apps are running</string>
-    <string name="location_dialog_title">Use Location Services?</string>
-    <string name="ringtone_dialog_title">Phone Ringtone</string>
-    <string name="labels_dialog_title">Label as:</string>
-    <string name="backup_dialog_title">Set backup account</string>
-    <string name="input_dialog_title">Enter you name:</string>
-</resources>
